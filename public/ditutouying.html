@@ -1,0 +1,878 @@
+
+<!DOCTYPE html>
+<head>
+    <title>draw</title>
+    <style type="text/css">
+      body
+      {
+          padding: 10px;
+          margin: 0;
+      }
+      #biaotilan
+      {
+          width: 1666;
+          margin: 40px;
+          margin: 0;
+          padding: 0;
+          height: 200px;
+      }
+      #gongnenglan
+      {
+          width: 15%;
+          overflow: hidden;
+          height:100%;
+          float: left;
+          margin-right:50px;
+      }
+      #ditukuang
+      {
+          height: 450px;
+          width: 60%;
+          float: left;
+          border-width:0px;
+          margin-left:50px;
+      }
+
+      input[type="file"]{
+       color:transparent;
+       font-size: 30px;
+       opacity: 0;
+       position: absolute;
+      }
+
+
+       #biaotilan{margin:2px;text-align:center;}
+       #ditukuang{border-style:solid;border-width:2px;border-color:Blue;margin:2px;}
+      h2:hover{text-decoration:underline;color:Black;}
+      #gongneng:hover {height:50px;background-color:#CCCCCC;border-width:3px;border-color:Blue;margin:2px;font-size:large;}
+      #gongneng{height:30px;background-color:#FFFAF0;font-size:small;border-style:solid;border-width:2px;border-color:Blue;}
+      
+     
+
+
+
+  </style>
+    <script type="text/javascript">
+        var adress;
+        var line1= new line();
+        var file_first;
+        var file_second;
+        var map1=new map();
+        var map2=new map();
+        var dayuanline=new line();                         //存储大圆航线
+        var map3=new map();
+
+        function point(id,x,y)
+        {
+            this.id=id;
+            this.x=x;
+            this.y=y;
+        }                                //点结构
+        
+        function line(points,id)
+        {
+           var i=0;
+           this.id=id;
+           this.points = new Array(1000);
+           for (;i<1000;i++)
+           {
+              this.points[i]= new point();
+           }
+
+        }                               //线结构
+
+        function map(lines)
+        {
+           this.lines= new Array(1500);
+           var k=0;
+        for(;k<1500;k++)
+        {
+            this.lines[k]=new line();
+        }
+
+        }
+
+        
+
+
+
+  function readText(canvas_id) {
+      //alert(111);
+      if(canvas_id==1)
+      var file=document.getElementById("file").files[0];
+      else if(canvas_id==2)
+      var file=document.getElementById("file2").files[0];
+      var reader=new FileReader();
+      var i=0;
+      reader.readAsText(file);
+      reader.onload=function(data)
+      {
+        //this.result[0];
+        var num=0;
+        var j=-5;
+        var flag=0;
+        var number_lines=-1;
+        var biaozhi=0;
+       while(this.result[j+1]!='E'||this.result[j+6]!='E')   //文件没有结束
+       {
+        var a=0;
+        j=j+4;
+        i=0;
+        number_lines++;
+        flag=0;
+        while(line1.points[a].id!=null)
+        {
+          line1.points[a].id=null;
+          line1.points[a].x=null;
+   
+          line1.points[a].y=null;
+          a++;
+        }
+       while(this.result[j+1]!='E')
+        {
+          var a="";
+          j++;
+          while(this.result[j]!='\n'&&this.result[j]!='E'&&this.result[j]!=',')
+          {
+            a=a+this.result[j];
+            j++;
+            biaozhi=1;             //确定读到数
+          }
+          if(biaozhi==1)
+          {
+          if(flag==0)
+          {
+          line1.points[i].id=a;
+                map1.lines[number_lines].id=a;
+          }
+          else if(flag==1)
+          {
+          line1.points[i].x=a;
+                map1.lines[number_lines].points[i].x=a;
+          }
+          else if(flag==2)
+          {         
+          line1.points[i].y=a;
+                map1.lines[number_lines].points[i].y=a;
+          flag=0;
+          i++;
+          }
+          flag++;
+          biaozhi=0;
+          }
+         // num=num+6;
+        }
+       }
+       number=0;
+       i=0;
+       while(map1.lines[number].id!=null)
+      {
+        i=0;
+        map2.lines[number].id=map1.lines[number].id;
+      while(map1.lines[number].points[i].x!=null)
+      {
+         map2.lines[number].points[i].id=map1.lines[number].points[i].id;
+         map2.lines[number].points[i].x=map1.lines[number].points[i].x;
+         map2.lines[number].points[i].y=map1.lines[number].points[i].y;                          //复制原有的数据，不影响下一次投影
+         i++;
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+      draw(canvas_id);
+      }    
+    }
+
+function draw(canvas_id)
+{
+      var canvas=document.getElementById("myCanvas");
+      var ctx = canvas.getContext("2d");//返回一个二维的绘画环境
+      var i=0;
+      var number=0;
+
+     if(canvas_id==1)
+     {
+      var ctx = canvas.getContext("2d");//返回一个二维的绘画环境
+      var number=0;
+      var i=0;
+      ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+      ctx.lineWidth=1;
+  ctx.beginPath();
+  number=0;
+      for(a=0;a<=canvas.clientWidth;a=a+60)
+  {
+  ctx.moveTo(a,0);
+  ctx.lineTo(a,canvas.clientHeight);
+  ctx.strokeStyle="black"
+  ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+  var i2=0;
+ map3.lines[number].points[0].y=0;
+  for(i=0;i<canvas.clientHeight;i++)
+  { 
+    map3.lines[number].id=i2+1;   
+    map3.lines[number].points[i2].id=i2+1;
+        map3.lines[number].points[i2].x=a;
+        if(i==0)
+        map3.lines[number].points[i2].y=2;
+        else
+        map3.lines[number].points[i2].y= map3.lines[number].points[i2-1].y+2;
+        i2++;
+  }
+  number++;
+  }
+
+  for(a=0;a<=canvas.clientHeight;a=a+36)
+  {
+  ctx.moveTo(0,a);
+  ctx.lineTo(canvas.clientWidth,a);
+  ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+  }
+  ctx.closePath();
+  
+     number=0;
+      while(map1.lines[number].id!=null)
+      {
+        i=0;
+      while(map1.lines[number].points[i+1].x!=null)
+      {
+             ctx.beginPath();
+     ctx.strokeStyle="blue"
+       ctx.lineWidth=1;   
+       ctx.moveTo(map1.lines[number].points[i].x*6-300,(-map1.lines[number].points[i].y)*6+360);
+      ctx.lineTo(map1.lines[number].points[i+1].x*6-300,(-map1.lines[number].points[i+1].y)*6+360);
+      ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+      i++;
+      ctx.closePath();
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+     }
+     else if(canvas_id==2)
+     {
+        while(map1.lines[number].id!=null)
+      {
+        i=0;
+      while(map1.lines[number].points[i+1].x!=null)
+      {
+             ctx.beginPath();
+     ctx.strokeStyle="blue"
+       ctx.lineWidth=1;   
+       ctx.moveTo(map1.lines[number].points[i].x*2+350,(-map1.lines[number].points[i].y)*2+180);
+      ctx.lineTo(map1.lines[number].points[i+1].x*2+350,(-map1.lines[number].points[i+1].y)*2+180);
+      ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+      i++;
+      ctx.closePath();
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+     }
+     else if(canvas_id==3)
+     {
+      var ctx = canvas.getContext("2d");//返回一个二维的绘画环境
+      var number=0;
+      var i=0;
+      ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+      ctx.lineWidth=1;//清除原有的坐标系
+      //绘制兰伯特投影下的坐标系
+      ctx.beginPath();
+  number=0;
+  
+  for(a=0;a<=canvas.clientWidth;a=a+2)
+  {
+  var i2=0;
+ map3.lines[number].points[0].y=0;
+  for(i=0;i<canvas.clientHeight;i++)
+  { 
+    map3.lines[number].id=i2+1;   
+    map3.lines[number].points[i2].id=i2+1;
+        map3.lines[number].points[i2].x=a/2;
+        if(i==0)
+        map3.lines[number].points[i2].y=1;
+        else
+        map3.lines[number].points[i2].y= map3.lines[number].points[i2-1].y+5;
+        i2++;
+  }
+  number++;
+  }
+
+  ctx.closePath();
+  number=0;
+
+        while(map1.lines[number].id!=null)
+      {
+        i=0;
+      while(map1.lines[number].points[i+1].x!=null)
+      {
+             ctx.beginPath();
+     ctx.strokeStyle="blue"
+       ctx.lineWidth=1;   
+       ctx.moveTo(map1.lines[number].points[i].x*5+350,(-map1.lines[number].points[i].y)*5+350);
+      ctx.lineTo(map1.lines[number].points[i+1].x*5+350,(-map1.lines[number].points[i+1].y)*5+350);
+      ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+      i++;
+      ctx.closePath();
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+     }
+     else if(canvas_id==4)
+     {
+      var ctx = canvas.getContext("2d");//返回一个二维的绘画环境
+      var number=0;
+      var i=0;
+      ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+      ctx.lineWidth=1;
+  ctx.beginPath();
+  number=0;
+      for(a=0;a<=canvas.clientWidth;a=a+60)
+  {
+  ctx.moveTo(a,0);
+  ctx.lineTo(a,canvas.clientHeight);
+  ctx.strokeStyle="black"
+  ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+  var i2=0;
+ map3.lines[number].points[0].y=0;
+  for(i=0;i<canvas.clientHeight;i++)
+  { 
+    map3.lines[number].id=i2+1;   
+    map3.lines[number].points[i2].id=i2+1;
+        map3.lines[number].points[i2].x=a;
+        if(i==0)
+        map3.lines[number].points[i2].y=2;
+        else
+        map3.lines[number].points[i2].y= map3.lines[number].points[i2-1].y+2;
+        i2++;
+  }
+  number++;
+  }
+
+  for(a=0;a<=canvas.clientHeight;a=a+36)
+  {
+  ctx.moveTo(0,a);
+  ctx.lineTo(canvas.clientWidth,a);
+  ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+  }
+  ctx.closePath();
+  
+     number=0;
+        while(map1.lines[number].id!=null)
+      {
+        i=0;
+      while(map1.lines[number].points[i+1].x!=null)
+      {
+             ctx.beginPath();
+     ctx.strokeStyle="blue"
+       ctx.lineWidth=1;   
+       ctx.moveTo(map1.lines[number].points[i].x*7-150,(-map1.lines[number].points[i].y)*7+350);
+      ctx.lineTo(map1.lines[number].points[i+1].x*7-150,(-map1.lines[number].points[i+1].y)*7+350);
+      ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+      i++;
+      ctx.closePath();
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+     }
+    //   ctx.closePath();
+    else if(canvas_id==5)
+     {
+        while(map1.lines[number].id!=null)
+      {
+        i=0;
+      while(map1.lines[number].points[i+1].x!=null)
+      {
+             ctx.beginPath();
+     ctx.strokeStyle="blue"
+       ctx.lineWidth=1;   
+       ctx.moveTo(map1.lines[number].points[i].x*4+350,(-map1.lines[number].points[i].y)*4+200);
+      ctx.lineTo(map1.lines[number].points[i+1].x*4+350,(-map1.lines[number].points[i+1].y)*4+200);
+      ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+      i++;
+      ctx.closePath();
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+     }
+
+     else if(canvas_id==6)
+     {
+        while(map3.lines[number].id!=null)
+      {
+        i=0;
+      while(map3.lines[number].points[i+1].x!=null)
+      {
+             ctx.beginPath();
+     ctx.strokeStyle="black"
+       ctx.lineWidth=1;   
+       ctx.moveTo(map3.lines[number].points[i].x*5+400,(-map3.lines[number].points[i].y)*5+400);
+      ctx.lineTo(map3.lines[number].points[i+1].x*5+400,(-map3.lines[number].points[i+1].y)*5+400);
+      ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+      i++;
+      ctx.closePath();
+      }
+      //element.appendChild(canvas);
+      number=number+10;
+      }
+
+   number=0;
+   i=0;
+      while(map3.lines[number].id!=null)
+      {
+        number=0;
+      while(map3.lines[number+1].points[i].x!=null)
+      {
+             ctx.beginPath();
+     ctx.strokeStyle="black"
+       ctx.lineWidth=1;   
+       ctx.moveTo(map3.lines[number].points[i].x*5+400,(-map3.lines[number].points[i].y)*5+400);
+      ctx.lineTo(map3.lines[number+1].points[i].x*5+400,(-map3.lines[number+1].points[i].y)*5+400);
+      ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+      number=number+1;
+      ctx.closePath();
+      }
+      //element.appendChild(canvas);
+      i=i+10;
+      }
+     }
+     if(canvas_id==3)
+         fanggebianhua();
+
+     
+}
+
+function draw_fangge()
+{
+  var canvas=document.getElementById("myCanvas");
+  var ctx = canvas.getContext("2d");//返回一个二维的绘画环境
+  var a;
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  for(a=0;a<=canvas.clientWidth;a=a+10)
+  {
+  ctx.moveTo(a,0);
+  ctx.lineTo(a,canvas.clientHeight);
+  ctx.strokeStyle="black"
+  ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+  }
+
+  for(a=0;a<=canvas.clientHeight;a=a+10)
+  {
+  ctx.moveTo(0,a);
+  ctx.lineTo(canvas.clientWidth,a);
+  ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+  }
+  ctx.closePath();
+}
+        
+   function clear_canvas()
+        {
+      var canvas=document.getElementById("myCanvas");
+     // canvas.width  = 500; 
+     // canvas.height = 300; 
+      var ctx = canvas.getContext("2d");//返回一个二维的绘画环境
+      var number=0;
+      var i=0;
+      ctx.clearRect(0,0,canvas.clientWidth,canvas.clientHeight);
+
+      while(map1.lines[number].id!=null)
+      {
+        i=0;
+      while(map1.lines[number].points[i].x!=null)
+      {
+         map1.lines[number].points[i].id=null;
+         map1.lines[number].points[i].x=null;
+         map1.lines[number].points[i].y=null;                          //清空原有的数据
+         i++;
+      }
+      //element.appendChild(canvas);
+      map1.lines[number].id=null;
+      number++;
+      }
+
+      draw_fangge();
+        }
+
+        function Lambert(canvas_id)
+        {
+          var number=0;
+          var i=0;
+          var m=0;
+          var t=0;
+          var n=0;
+          var F=0;
+          var r=0;
+          var angle=0;  
+          var mb1=0;
+          var mb2=0;
+          var tb1=0;
+          var tb2=0;
+          var r0=0;
+          var t0=0;
+          
+      //进行坐标转换
+      //计算几个常量
+      mb1=Math.cos(20*2*Math.PI/360)/(Math.sqrt(1-1/298.3*1/298.3*Math.sin(20*2*Math.PI/360)*Math.sin(20*2*Math.PI/360)));
+      mb2=Math.cos(40*2*Math.PI/360)/(Math.sqrt(1-1/298.3*1/298.3*Math.sin(40*2*Math.PI/360)*Math.sin(40*2*Math.PI/360)));
+      tb1=Math.tan((Math.PI/4)-(10*2*Math.PI/360))/Math.pow((1-1/298.3*Math.sin(20*2*Math.PI/360))/(1+1/298.3*Math.sin(20*2*Math.PI/360)),(1/298.3/2));
+      tb2=Math.tan((Math.PI/4)-(20*2*Math.PI/360))/Math.pow((1-1/298.3*Math.sin(40*2*Math.PI/360))/(1+1/298.3*Math.sin(40*2*Math.PI/360)),(1/298.3/2));
+      n=Math.log(mb1/mb2)/Math.log(tb1/tb2);
+      F=mb1/(n*Math.pow(tb1,n));
+      t0=Math.tan((Math.PI/4)-(0/2)*2*Math.PI/360)/Math.pow((1-1/298.3*Math.sin(0)*2*Math.PI/360)/(1+1/298.3*Math.sin(0)*2*Math.PI/360),(1/298.3/2));
+      r0=6378245*F*Math.pow(t0,n);
+      while(map1.lines[number].id!=null)
+      {
+        i=0;
+      while(map1.lines[number].points[i].x!=null)
+      {
+        m=Math.cos(map1.lines[number].points[i].y*2*Math.PI/360)/(Math.sqrt(1-1/298.3*1/298.3*Math.sin(map1.lines[number].points[i].y)*2*Math.PI/360*Math.sin(map1.lines[number].points[i].y)*2*Math.PI/360));
+        t=Math.tan((Math.PI/4)-(map1.lines[number].points[i].y/2)*2*Math.PI/360)/Math.pow((1-1/298.3*Math.sin(map1.lines[number].points[i].y)*2*Math.PI/360)/(1+1/298.3*Math.sin(map1.lines[number].points[i].y)*2*Math.PI/360),(1/298.3/2));
+        r=6378245*F*Math.pow(t,n);
+        angel=n*(map1.lines[number].points[i].x-105);
+        map1.lines[number].points[i].y=(r0-r*Math.cos(angel*2*Math.PI/360))/100000;
+        map1.lines[number].points[i].x=(r*Math.sin(angel*2*Math.PI/360))/100000;                          //转换坐标
+         i++;
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+      //把值全部存进暂存的数组里
+       //把clear_canvas消除的数据重新赋值回来
+       number=0;
+       while(map2.lines[number].id!=null)
+      {
+        i=0;
+        map2.lines[number].id=map1.lines[number].id;
+      while(map2.lines[number].points[i].x!=null)
+      {
+         map2.lines[number].points[i].id=map1.lines[number].points[i].id;
+         map2.lines[number].points[i].x=map1.lines[number].points[i].x;
+         map2.lines[number].points[i].y=map1.lines[number].points[i].y;                          //复制原有的数据，进行兰伯特投影，不影响下一次投影
+         i++;
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+      clear_canvas();
+      //把clear_canvas消除的数据重新赋值回来
+      number=0;
+       while(map2.lines[number].id!=null)
+      {
+        i=0;
+        map1.lines[number].id=map2.lines[number].id;
+      while(map2.lines[number].points[i].x!=null)
+      {
+         map1.lines[number].points[i].id=map2.lines[number].points[i].id;
+         map1.lines[number].points[i].x=map2.lines[number].points[i].x;
+         map1.lines[number].points[i].y=map2.lines[number].points[i].y;                          //复制原有的数据，进行兰伯特投影，不影响下一次投影
+         i++;
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+       draw(3);
+
+        }
+
+   
+    function Mercator(id)
+    {
+      var K=0;
+      var a=6378245;
+      var b=6356863.01877;
+      var efang=0.006738525414684;
+      var e=1/298.3;
+      K=(a*a/b)/Math.sqrt(1+efang*Math.cos(0)*Math.cos(0))*Math.cos(0);
+      number=0;
+      while(map1.lines[number].id!=null)
+      {
+        i=0;
+      while(map1.lines[number].points[i].x!=null)
+      {
+        if(id==1)
+        {
+        map1.lines[number].points[i].y=K*Math.log(Math.tan(Math.PI/4+map1.lines[number].points[i].y/2*Math.PI/180)*Math.pow(((1-e*Math.sin(map1.lines[number].points[i].y))/(1+e*Math.sin(map1.lines[number].points[i].y))),(e/2)))/170000;
+        map1.lines[number].points[i].x=K*(map1.lines[number].points[i].x)/10000000;                          //转换坐标
+        }
+         else
+         {
+        map1.lines[number].points[i].y=K*Math.log(Math.tan(Math.PI/4+map1.lines[number].points[i].y/2*Math.PI/180)*Math.pow(((1-e*Math.sin(map1.lines[number].points[i].y))/(1+e*Math.sin(map1.lines[number].points[i].y))),(e/2)))/500000;
+        map1.lines[number].points[i].x=K*(map1.lines[number].points[i].x)/10000000;                          //转换坐标
+        }
+         i++;
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+
+ //把值全部存进暂存的数组里
+       //把clear_canvas消除的数据重新赋值回来
+       number=0;
+       while(map2.lines[number].id!=null)
+      {
+        i=0;
+        map2.lines[number].id=map1.lines[number].id;
+      while(map2.lines[number].points[i].x!=null)
+      {
+         map2.lines[number].points[i].id=map1.lines[number].points[i].id;
+         map2.lines[number].points[i].x=map1.lines[number].points[i].x;
+         map2.lines[number].points[i].y=map1.lines[number].points[i].y;                          //复制原有的数据，进行墨卡托投影，不影响下一次投影
+         i++;
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+      clear_canvas();
+      //把clear_canvas消除的数据重新赋值回来
+      number=0;
+       while(map2.lines[number].id!=null)
+      {
+        i=0;
+        map1.lines[number].id=map2.lines[number].id;
+      while(map2.lines[number].points[i].x!=null)
+      {
+         map1.lines[number].points[i].id=map2.lines[number].points[i].id;
+         map1.lines[number].points[i].x=map2.lines[number].points[i].x;
+         map1.lines[number].points[i].y=map2.lines[number].points[i].y;                          //复制原有的数据，进行墨卡托投影，不影响下一次投影
+         i++;
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+      if(id==1)
+      draw(4);
+      else
+      draw(5);
+    }
+
+    function dayuanhangxian()
+    {
+      var lat1=39.8;
+      var lat2=48.52;
+      var lon1=116.4;
+      var dlong=(2.2-116.4);
+      var bx=0;
+      var by=0;
+      var latm=0;
+      var lonm=0;
+      var i=0;
+  
+      dayuanline.points[0].id=1
+      dayuanline.points[0].x=116.4;
+      dayuanline.points[0].y=39.8;                     //存储北京的数据
+
+      dayuanline.points[8].id=9                        //存储巴黎的数据
+      dayuanline.points[8].x=2.2;
+      dayuanline.points[8].y=48.52;
+
+      bx=Math.cos(lat2*Math.PI/180)*Math.cos(dlong*Math.PI/180);
+      by=Math.cos(lat2*Math.PI/180)*Math.sin(dlong*Math.PI/180);
+      latm=Math.atan2((Math.sin(lat1*Math.PI/180)+Math.sin(lat2*Math.PI/180)),Math.sqrt((Math.cos(lat1*Math.PI/180)+bx)*(Math.cos(lat1*Math.PI/180)+bx)+by*by))*180/Math.PI;
+      lonm=lon1+Math.atan2(by,(Math.cos(lat1*Math.PI/180)+bx))*180/Math.PI;
+      
+      dayuanline.points[4].id=5;
+      dayuanline.points[4].x=lonm;
+      dayuanline.points[4].y=latm;                     //计算出第一个中间点，现在9个单元里面有3个单元有值。
+      
+      lat1=39.8;
+      lat2=latm;
+      dlong=lonm-116.4;
+      lon1=116.4;
+      bx=Math.cos(lat2*Math.PI/180)*Math.cos(dlong*Math.PI/180);
+      by=Math.cos(lat2*Math.PI/180)*Math.sin(dlong*Math.PI/180);
+      latm=Math.atan2((Math.sin(lat1*Math.PI/180)+Math.sin(lat2*Math.PI/180)),Math.sqrt((Math.cos(lat1*Math.PI/180)+bx)*(Math.cos(lat1*Math.PI/180)+bx)+by*by))*180/Math.PI;
+      lonm=lon1+Math.atan2(by,(Math.cos(lat1*Math.PI/180)+bx))*180/Math.PI;
+      
+      dayuanline.points[2].id=3;
+      dayuanline.points[2].x=lonm;
+      dayuanline.points[2].y=latm;                     //计算出第一个中间点，现在9个单元里面有4个单元有值。
+
+      lat1= dayuanline.points[4].y;
+      lat2= dayuanline.points[8].y;
+      dlong= dayuanline.points[8].x- dayuanline.points[4].x;
+      lon1= dayuanline.points[4].x;
+      bx=Math.cos(lat2*Math.PI/180)*Math.cos(dlong*Math.PI/180);
+      by=Math.cos(lat2*Math.PI/180)*Math.sin(dlong*Math.PI/180);
+      latm=Math.atan2((Math.sin(lat1*Math.PI/180)+Math.sin(lat2*Math.PI/180)),Math.sqrt((Math.cos(lat1*Math.PI/180)+bx)*(Math.cos(lat1*Math.PI/180)+bx)+by*by))*180/Math.PI;
+      lonm=lon1+Math.atan2(by,(Math.cos(lat1*Math.PI/180)+bx))*180/Math.PI;
+      
+      dayuanline.points[6].id=7;
+      dayuanline.points[6].x=lonm;
+      dayuanline.points[6].y=latm;                     //计算出第一个中间点，现在9个单元里面有5个单元有值。
+
+      lat1= dayuanline.points[0].y;
+      lat2= dayuanline.points[2].y;
+      dlong= dayuanline.points[2].x- dayuanline.points[0].x;
+      lon1= dayuanline.points[0].x;
+      bx=Math.cos(lat2*Math.PI/180)*Math.cos(dlong*Math.PI/180);
+      by=Math.cos(lat2*Math.PI/180)*Math.sin(dlong*Math.PI/180);
+      latm=Math.atan2((Math.sin(lat1*Math.PI/180)+Math.sin(lat2*Math.PI/180)),Math.sqrt((Math.cos(lat1*Math.PI/180)+bx)*(Math.cos(lat1*Math.PI/180)+bx)+by*by))*180/Math.PI;
+      lonm=lon1+Math.atan2(by,(Math.cos(lat1*Math.PI/180)+bx))*180/Math.PI;
+      
+      dayuanline.points[1].id=2;
+      dayuanline.points[1].x=lonm;
+      dayuanline.points[1].y=latm;                     //计算出第一个中间点，现在9个单元里面有6个单元有值。
+      
+
+      lat1= dayuanline.points[2].y;
+      lat2= dayuanline.points[4].y;
+      dlong= dayuanline.points[4].x- dayuanline.points[2].x;
+      lon1= dayuanline.points[2].x;
+      bx=Math.cos(lat2*Math.PI/180)*Math.cos(dlong*Math.PI/180);
+      by=Math.cos(lat2*Math.PI/180)*Math.sin(dlong*Math.PI/180);
+      latm=Math.atan2((Math.sin(lat1*Math.PI/180)+Math.sin(lat2*Math.PI/180)),Math.sqrt((Math.cos(lat1*Math.PI/180)+bx)*(Math.cos(lat1*Math.PI/180)+bx)+by*by))*180/Math.PI;
+      lonm=lon1+Math.atan2(by,(Math.cos(lat1*Math.PI/180)+bx))*180/Math.PI;
+      
+      dayuanline.points[3].id=4;
+      dayuanline.points[3].x=lonm;
+      dayuanline.points[3].y=latm;                     //计算出第一个中间点，现在9个单元里面有7个单元有值。
+
+      lat1= dayuanline.points[4].y;
+      lat2= dayuanline.points[6].y;
+      dlong= dayuanline.points[6].x- dayuanline.points[4].x;
+      lon1= dayuanline.points[4].x;
+      bx=Math.cos(lat2*Math.PI/180)*Math.cos(dlong*Math.PI/180);
+      by=Math.cos(lat2*Math.PI/180)*Math.sin(dlong*Math.PI/180);
+      latm=Math.atan2((Math.sin(lat1*Math.PI/180)+Math.sin(lat2*Math.PI/180)),Math.sqrt((Math.cos(lat1*Math.PI/180)+bx)*(Math.cos(lat1*Math.PI/180)+bx)+by*by))*180/Math.PI;
+      lonm=lon1+Math.atan2(by,(Math.cos(lat1*Math.PI/180)+bx))*180/Math.PI;
+      
+      dayuanline.points[5].id=6;
+      dayuanline.points[5].x=lonm;
+      dayuanline.points[5].y=latm;                     //计算出第一个中间点，现在9个单元里面有8个单元有值。
+
+      lat1= dayuanline.points[6].y;
+      lat2= dayuanline.points[8].y;
+      dlong= dayuanline.points[8].x- dayuanline.points[6].x;
+      lon1= dayuanline.points[6].x;
+      bx=Math.cos(lat2*Math.PI/180)*Math.cos(dlong*Math.PI/180);
+      by=Math.cos(lat2*Math.PI/180)*Math.sin(dlong*Math.PI/180);
+      latm=Math.atan2((Math.sin(lat1*Math.PI/180)+Math.sin(lat2*Math.PI/180)),Math.sqrt((Math.cos(lat1*Math.PI/180)+bx)*(Math.cos(lat1*Math.PI/180)+bx)+by*by))*180/Math.PI;
+      lonm=lon1+Math.atan2(by,(Math.cos(lat1*Math.PI/180)+bx))*180/Math.PI;
+      
+      dayuanline.points[7].id=8;
+      dayuanline.points[7].x=lonm;
+      dayuanline.points[7].y=latm;                     //计算出第一个中间点，现在9个单元里面有9个单元有值。
+
+      //绘制
+      i=0;
+      var canvas=document.getElementById("myCanvas");
+      var ctx = canvas.getContext("2d");//返回一个二维的绘画环境
+      while(dayuanline.points[i].id)
+      {
+        ctx.beginPath();
+     ctx.strokeStyle="red"
+       ctx.lineWidth=5;   
+       ctx.moveTo(dayuanline.points[i].x*2+350,(-dayuanline.points[i].y)*2+180);
+      ctx.lineTo(dayuanline.points[i+1].x*2+350,(-dayuanline.points[i+1].y)*2+180);
+      ctx.stroke();                    //stroke() 方法会实际地绘制出通过 moveTo() 和 lineTo() 方法定义的路径。默认颜色是黑色。
+      i++;
+      ctx.closePath();
+      }
+      console.log("test");
+    }
+
+    function fanggebianhua()
+    {
+      var number=0;
+          var i=0;
+          var m=0;
+          var t=0;
+          var n=0;
+          var F=0;
+          var r=0;
+          var angle=0;  
+          var mb1=0;
+          var mb2=0;
+          var tb1=0;
+          var tb2=0;
+          var r0=0;
+          var t0=0;
+          
+      //进行坐标转换
+      //计算几个常量
+      mb1=Math.cos(20*2*Math.PI/360)/(Math.sqrt(1-1/298.3*1/298.3*Math.sin(20*2*Math.PI/360)*Math.sin(20*2*Math.PI/360)));
+      mb2=Math.cos(40*2*Math.PI/360)/(Math.sqrt(1-1/298.3*1/298.3*Math.sin(40*2*Math.PI/360)*Math.sin(40*2*Math.PI/360)));
+      tb1=Math.tan((Math.PI/4)-(10*2*Math.PI/360))/Math.pow((1-1/298.3*Math.sin(20*2*Math.PI/360))/(1+1/298.3*Math.sin(20*2*Math.PI/360)),(1/298.3/2));
+      tb2=Math.tan((Math.PI/4)-(20*2*Math.PI/360))/Math.pow((1-1/298.3*Math.sin(40*2*Math.PI/360))/(1+1/298.3*Math.sin(40*2*Math.PI/360)),(1/298.3/2));
+      n=Math.log(mb1/mb2)/Math.log(tb1/tb2);
+      F=mb1/(n*Math.pow(tb1,n));
+      t0=Math.tan((Math.PI/4)-(0/2)*2*Math.PI/360)/Math.pow((1-1/298.3*Math.sin(0)*2*Math.PI/360)/(1+1/298.3*Math.sin(0)*2*Math.PI/360),(1/298.3/2));
+      r0=6378245*F*Math.pow(t0,n);
+      while(map3.lines[number].id!=null)
+      {
+        i=0;
+      while(map3.lines[number].points[i].x!=null)
+      {
+        m=Math.cos(map3.lines[number].points[i].y*2*Math.PI/360)/(Math.sqrt(1-1/298.3*1/298.3*Math.sin(map3.lines[number].points[i].y)*2*Math.PI/360*Math.sin(map3.lines[number].points[i].y)*2*Math.PI/360));
+        t=Math.tan((Math.PI/4)-(map3.lines[number].points[i].y/2)*2*Math.PI/360)/Math.pow((1-1/298.3*Math.sin(map3.lines[number].points[i].y)*2*Math.PI/360)/(1+1/298.3*Math.sin(map3.lines[number].points[i].y)*2*Math.PI/360),(1/298.3/2));
+        r=6378245*F*Math.pow(t,n);
+        angel=n*(map3.lines[number].points[i].x-105);
+        map3.lines[number].points[i].y=(r0-r*Math.cos(angel*2*Math.PI/360))/100000;
+        map3.lines[number].points[i].x=(r*Math.sin(angel*2*Math.PI/360))/100000;                          //转换坐标
+         i++;
+      }
+      //element.appendChild(canvas);
+      number++;
+      }
+       draw(6);
+    }
+
+             </script>
+
+</head>
+<body onload="draw_fangge()">
+
+    <div id="biaotilan">
+        <img  src="F:\学习\大三上\gis算法\ditutouying\earth.jpg"
+                 alt="南京师范大学" style="height: 200px; width:80%" />
+         </div>
+     
+         </br>
+         </br>
+     
+         <div style="width:11%;height:585px;float:left;"> </div>
+     
+         <div id="gongnenglan">
+             <div id="gongneng">
+                <span style="font-family:宋体 Std L;color:#008B8B;font-style:normal;"> <input type="file" id="file"/><p style="text-align:center;">选择中国地图</p></span>
+             </div>
+             <div id="gongneng">             
+                <input type="button" onclick="readText(1)" value="显示" style="height:100%;width:100%">
+             </div>
+             <div id="gongneng">
+                <span style="font-family:宋体 Std L;color:#008B8B;font-style:normal;"> <input type="file" id="file2"/><p style="text-align:center;">选择世界地图</p></span>
+             </div>
+             <div id="gongneng">             
+                <input type="button" onclick="readText(2)" value="显示" style="height:100%;width:100%">
+             </div>
+             <div id="gongneng"  >
+                <input type="button" onclick="clear_canvas()" value="清除" style="height:100%;width:100%">
+             </div>
+             <div id="gongneng">             
+                <input type="button" onclick="Lambert(1)" value="兰伯特投影转换" style="height:100%;width:100%">
+             </div>
+             <div id="gongneng">             
+                <input type="button" onclick="Mercator(1)" value="墨卡托投影转换(中国)" style="height:100%;width:100%">
+             </div>
+             <div id="gongneng">             
+              <input type="button" onclick="Mercator(2)" value="墨卡托投影转换(世界)" style="height:100%;width:100%">
+           </div>  
+           <div id="gongneng">             
+            <input type="button" onclick="dayuanhangxian()" value="大圆航线" style="height:100%;width:100%">
+         </div>     
+         </div>
+     
+     
+         <div id="ditukuang">
+            <canvas id="myCanvas" width="720" height="360" style="float:left;margin:45px;margin-left:105px;"></canvas>
+         </div>
+<div>
+
+
+</div>
+</body>
+
+</html>
